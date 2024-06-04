@@ -91,7 +91,7 @@ ansible-playbook ops_playbook.yaml
 ansible-playbook notify_playbook.yaml
 ```
 
-## gitOps in practice : Flux (gtok)
+## gitOps in practice : Flux (gotk)
 
 ![gitOps-design](./resources/gitOps.png)
 *Figure 3 : gitOps using Flux gtok*
