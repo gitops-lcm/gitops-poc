@@ -1,0 +1,38 @@
+# config_git.yaml
+---
+- name: set up git for ops
+  tags:
+    - config_git
+  vars:
+    ops_host: "ops"
+    github_token: "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"
+    github_user: "etahmom"
+  block:
+    - name: Set Git user.name globally
+      community.general.git_config:
+        scope: global
+        name: user.name
+        value: "Eashin Matubber"
+
+    - name: Set Git user.email globally
+      community.general.git_config:
+        scope: global
+        name: user.email
+        value: "eashin.matubber@ericsson.com.com"
+
+    - name: Add GITHUB_TOKEN to .bashrc
+      ansible.builtin.lineinfile:
+        path: "{{ ansible_env.HOME }}/.bashrc"
+        line: "export GITHUB_TOKEN={{ github_token }}"
+        insertafter: EOF
+
+    - name: Add GITHUB_USER to .bashrc
+      ansible.builtin.lineinfile:
+        path: "{{ ansible_env.HOME }}/.bashrc"
+        line: "export GITHUB_USER={{ github_user }}"
+        insertafter: EOF
+
+  rescue:
+    - name: Handle errors during git config
+      ansible.builtin.debug:
+        msg: ":: GIT CONFIG ERROR :: "

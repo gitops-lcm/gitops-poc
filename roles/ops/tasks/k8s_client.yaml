@@ -1,0 +1,74 @@
+# k8s_client.yaml
+---
+- name: kubectl client setup
+  # become_user: "{{ ansible_user }}"
+  become: true
+  tags:
+    - k8s_client
+  vars:
+    ops_host: "ops"
+  block:
+    - name: Download and install kubectl
+      ansible.builtin.shell:
+        cmd: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" \
+          && chmod +x kubectl \
+          && mv kubectl /usr/local/bin/
+      delegate_to: "{{ ops_host }}"
+      when: ops_host in inventory_hostname
+      changed_when: false
+
+    - name: Create .kube directory
+      ansible.builtin.file:
+        path: "{{ ansible_env.HOME }}/.kube"
+        state: directory
+        mode: "0777"
+      delegate_to: "{{ ops_host }}"
+      when: ops_host in inventory_hostname
+
+    - name: Copy kubeconfig file from Ansible control node to ops host
+      ansible.builtin.copy:
+        src: "{{ role_path }}/../k8s/files/kubeconfig"
+        dest: "{{ ansible_env.HOME }}/.kube/config"
+        mode: "0666"
+        force: true
+      delegate_to: "{{ ops_host }}"
+      when: ops_host in inventory_hostname
+
+    - name: Set Kubernetes cluster configuration
+      ansible.builtin.shell:
+        cmd: >
+          kubectl config set-cluster kubernetes
+          --server=https://{{ hostvars['k8smaster']['ansible_host'] }}:6443
+      delegate_to: "{{ ops_host }}"
+      when: ops_host in inventory_hostname
+      changed_when: false
+
+    - name: Install bash-completion package
+      ansible.builtin.apt:
+        name: bash-completion
+        state: present
+      become: true
+
+    - name: Add source /etc/bash_completion to ~/.bashrc
+      ansible.builtin.lineinfile:
+        path: "{{ ansible_env.HOME }}/.bashrc"
+        line: "source /etc/bash_completion"
+        insertafter: EOF
+
+    - name: Ensure bash completion is enabled in ~/.bashrc
+      ansible.builtin.lineinfile:
+        path: "{{ ansible_env.HOME }}/.bashrc"
+        line: 'source /etc/bash_completion'
+        insertafter: EOF
+
+    - name: Add kubectl completion to ~/.bashrc
+      ansible.builtin.lineinfile:
+        path: "{{ ansible_env.HOME }}/.bashrc"
+        line: 'source <(kubectl completion bash)'
+        insertafter: EOF
+
+  rescue:
+    - name: Handle errors during cleanup
+      ansible.builtin.debug:
+        msg: ":: KUBECTL CLIENT ERROR ::"

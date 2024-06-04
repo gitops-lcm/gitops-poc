@@ -1,0 +1,23 @@
+# cluster_join.yaml
+---
+- name: k8 cluster installation
+  become: true
+  become_user: root
+  vars:
+    cp_host: "k8smaster"
+  tags:
+    - join
+  block:
+    - name: All nodes join cp kubeadm join
+      ansible.builtin.shell:
+        cmd: |
+          kubeadm join k8smaster:6443 \
+          --token $(echo "{{ lookup('file', role_path + '/files/token.key') }}") \
+          --discovery-token-ca-cert-hash sha256:$(echo "{{ lookup('file', role_path + '/files/pub.key') }}")
+      changed_when: false
+      when: "cp_host not in inventory_hostname"
+
+  rescue:
+    - name: Handle errors during join
+      ansible.builtin.debug:
+        msg: ":: JOIN  ERROR ::"

@@ -1,0 +1,25 @@
+# /tasks/main.yml
+---
+- name: docker environment clean up
+  ansible.builtin.import_tasks: docker_clean.yaml
+
+- name: docker installation Initialize
+  ansible.builtin.import_tasks: docker_init.yaml
+
+- name: docker hello-world
+  ansible.builtin.import_tasks: docker_hello.yaml
+
+- name: install kubectl client
+  ansible.builtin.import_tasks: k8s_client.yaml
+
+- name: setup git for ops
+  ansible.builtin.import_tasks: config_k8s.yaml
+
+- name: setup git for ops
+  ansible.builtin.import_tasks: config_git.yaml
+
+- name: setup flux for ops
+  ansible.builtin.import_tasks: config_flux.yaml
+
+- name: setup flux for ops
+  ansible.builtin.import_tasks: flux_bootstrap.yaml

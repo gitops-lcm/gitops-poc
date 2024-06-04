@@ -1,0 +1,6 @@
+# patch_playbook.yaml
+---
+- name: patch playbook
+  hosts: opserver
+  roles:
+    - patch

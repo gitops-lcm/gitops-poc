@@ -1,0 +1,6 @@
+# ops_playbook.yaml
+---
+- name: notify playbook
+  hosts: opserver
+  roles:
+    - notify

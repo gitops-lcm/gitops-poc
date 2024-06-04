@@ -1,0 +1,37 @@
+# docker_cleanup.yaml
+---
+- name: Clean the docker environment
+  become: true
+  tags:
+    - docker_clean
+  block:
+    - name: Remove existing Docker
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - docker.io
+        - docker-doc
+        - docker-compose
+        - podman-docker
+        - containerd
+        - runc
+
+    - name: Remove Docker GPG key
+      ansible.builtin.file:
+        path: /etc/apt/keyrings/docker.asc
+        state: absent
+
+    - name: Remove Docker repository files
+      ansible.builtin.file:
+        path: "/etc/apt/sources.list.d/docker.list"
+        state: absent
+
+    - name: Update Apt repos
+      ansible.builtin.apt:
+        update_cache: true
+
+  rescue:
+    - name: Handle errors during cleanup
+      ansible.builtin.debug:
+        msg: ":: CLEANUP ERROR ::"

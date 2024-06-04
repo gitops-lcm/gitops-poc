@@ -1,0 +1,31 @@
+# config_flux.yaml
+---
+- name: set up flux for ops
+  tags:
+    - config_flux
+  vars:
+    ops_host: "ops"
+    github_token: "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"
+    github_user: "etahmom"
+    github_group: "gitops-lcm"
+  block:
+    - name: Install Flux
+      ansible.builtin.shell:
+        cmd: "curl -s https://fluxcd.io/install.sh | sudo bash"
+      changed_when: false
+
+    - name: Run flux check --pre
+      ansible.builtin.shell:
+        cmd: flux check --pre
+      changed_when: false
+
+    - name: Add flux completion to ~/.bashrc
+      ansible.builtin.lineinfile:
+        path: ~/.bashrc
+        line: ". <(flux completion bash)"
+        insertafter: EOF
+
+  rescue:
+    - name: Handle errors during git config
+      ansible.builtin.debug:
+        msg: ":: FLUX CONFIG ERROR :: "

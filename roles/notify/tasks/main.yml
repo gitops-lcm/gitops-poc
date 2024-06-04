@@ -1,0 +1,4 @@
+# /tasks/main.yml
+---
+- name: create k8s secret
+  ansible.builtin.import_tasks: k8s_secret.yaml

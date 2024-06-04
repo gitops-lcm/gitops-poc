@@ -1,0 +1,6 @@
+# ops_playbook.yaml
+---
+- name: ops install playbook
+  hosts: opserver
+  roles:
+    - ops

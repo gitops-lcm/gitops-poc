@@ -1,0 +1,4 @@
+# /tasks/main.yml
+---
+- name: patch flux-monitor service
+  ansible.builtin.import_tasks: flux_monitor.yaml

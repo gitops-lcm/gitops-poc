@@ -1,0 +1,6 @@
+# k8_playbook.yaml
+---
+- name: k8s install playbook
+  hosts: servers
+  roles:
+    - k8s

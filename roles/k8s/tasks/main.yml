@@ -1,0 +1,21 @@
+---
+- name: k8 cluster environment preparation
+  ansible.builtin.import_tasks: cluster_prep.yaml
+
+- name: k8 cluster installation
+  ansible.builtin.import_tasks: cluster_install.yaml
+
+- name: k8 cluster initiate
+  ansible.builtin.import_tasks: cluster_init.yaml
+
+- name: k8 admin user initiate
+  ansible.builtin.import_tasks: cluster_user.yaml
+
+- name: k8 cni initiate
+  ansible.builtin.import_tasks: cluster_cilium.yaml
+
+- name: k8 cluster key gen
+  ansible.builtin.import_tasks: cluster_key.yaml
+
+- name: k8 cluster join
+  ansible.builtin.import_tasks: cluster_join.yaml

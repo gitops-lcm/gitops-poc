@@ -1,0 +1,85 @@
+# docker_init.yaml
+---
+- name: Install Docker initiating
+  become: true
+  tags:
+    - docker_init
+  block:
+    - name: Install required system packages
+      ansible.builtin.apt:
+        pkg:
+          - ca-certificates
+          - curl
+          - apt-transport-https
+          - gnupg2
+          - software-properties-common
+          - git
+          - wget
+          - lsb-release
+          - python3-pip
+          - python3-setuptools
+          - python3-dev
+          - libffi-dev
+          - libssl-dev
+          - python3-kubernetes
+        state: present
+
+    - name: Create /etc/apt/keyrings directory with permissions
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: "0777"
+
+    - name: Download Docker GPG key and set permissions
+      ansible.builtin.get_url:
+        url: https://download.docker.com/linux/debian/gpg
+        dest: /etc/apt/keyrings/docker.asc
+        validate_certs: true
+        mode: "0644"
+        force: true
+
+    - name: Add Docker repository to sources.list.d
+      ansible.builtin.lineinfile:
+        path: /etc/apt/sources.list.d/docker.list
+        line: 'deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu jammy stable'
+        create: true
+        mode: '0644'
+
+    - name: Update Apt repos
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Install Docker packgs
+      ansible.builtin.apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+
+    - name: Add the user to the Docker group
+      ansible.builtin.user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: true
+    - name: Reset ssh connection to allow user changes to affect 'current login user'
+      ansible.builtin.meta: reset_connection
+
+    - name: Restart Docker service
+      ansible.builtin.service:
+        name: docker
+        state: restarted
+
+    - name: Update package list
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Upgrade installed packages
+      ansible.builtin.apt:
+        upgrade: true
+  rescue:
+    - name: Handle errors during install
+      ansible.builtin.debug:
+        msg: ":: INSTALL ERROR ::"

@@ -1,0 +1,31 @@
+    # cluster_cilium.yaml
+---
+- name: k8 cluster cni init
+  become_user: "{{ ansible_user }}"
+  become: true
+  vars:
+    cp_host: "k8smaster"
+  tags:
+    - cilium
+  block:
+    - name: Copy cilium-cni.yaml to cp /tmp
+      ansible.builtin.copy:
+        src: "{{ role_path }}/files/cilium-cni.yaml"
+        dest: "/tmp/cilium-cni.yaml"
+        mode: "0666"
+        force: true
+      delegate_to: "{{ cp_host }}"
+      when: cp_host in inventory_hostname
+
+    - name: Apply Cilium CNI configuration using shell
+      ansible.builtin.shell:
+        cmd: "kubectl apply -f /tmp/cilium-cni.yaml"
+      delegate_to: "{{ cp_host }}"
+      become: true
+      when: "cp_host in inventory_hostname"
+      changed_when: false
+
+  rescue:
+    - name: Handle errors during cni init
+      ansible.builtin.debug:
+        msg: ":: CNI ERROR ::"

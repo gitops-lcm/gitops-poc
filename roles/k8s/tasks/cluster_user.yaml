@@ -1,0 +1,43 @@
+# user_admin.yaml
+---
+- name: k8 cluster user init
+  become_user: "{{ ansible_user }}"
+  become: true
+  vars:
+    cp_host: "k8smaster"
+  tags:
+    - user
+  block:
+    - name: Ensure .kube directory exists
+      ansible.builtin.file:
+        path: "{{ ansible_env.HOME }}/.kube"
+        state: directory
+        mode: '0700'
+      delegate_to: "{{ cp_host }}"
+      when: cp_host in inventory_hostname
+
+    - name: Copy admin.conf to .kube/config
+      ansible.builtin.copy:
+        src: "/etc/kubernetes/admin.conf"
+        dest: "{{ ansible_env.HOME }}/.kube/config"
+        remote_src: true
+        mode: '0600'
+        force: true
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+      delegate_to: "{{ cp_host }}"
+      become_user: root
+      become: true
+      when: cp_host in inventory_hostname
+
+    - name: Fetch kubeconfig file to Ansible control node
+      ansible.builtin.fetch:
+        src: "{{ ansible_env.HOME }}/.kube/config"
+        dest: "{{ role_path }}/files/kubeconfig"
+        flat: true
+      when: cp_host in inventory_hostname
+
+  rescue:
+    - name: Handle errors during user init
+      ansible.builtin.debug:
+        msg: ":: USER INIT ERROR ::"

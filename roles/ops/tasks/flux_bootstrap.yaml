@@ -1,0 +1,41 @@
+# config_flux.yaml
+---
+- name: bootstrap flux for ops
+  tags:
+    - flux_bootstrap
+  vars:
+    ops_host: "ops"
+    github_token: "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"
+    github_user: "etahmom"
+    github_group: "gitops-lcm"
+    github_repo: "flux-infra"
+    github_branch: "main"
+    flux_path: "./clusters/ops"
+  block:
+    - name: Flux Bootstrap
+      ansible.builtin.shell:
+        cmd: >
+          flux bootstrap github
+          --owner={{ github_group }}
+          --repository={{ github_repo }}
+          --branch={{ github_branch }}
+          --path={{ flux_path }}
+          --personal=false
+          --log-level=debug
+          --network-policy=false
+          --token-auth
+      environment:
+        GITHUB_TOKEN: "{{ github_token }}"
+      args:
+        executable: /bin/bash
+      register: flux_bootstrap
+      changed_when: "'All done' in flux_bootstrap.stdout"
+
+    - name: Print bootstrap output
+      ansible.builtin.debug:
+        var: flux_bootstrap.stdout
+
+  rescue:
+    - name: Handle errors during git config
+      ansible.builtin.debug:
+        msg: ":: FLUX BOOTSTRAP ERROR :: "

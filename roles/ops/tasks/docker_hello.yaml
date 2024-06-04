@@ -1,0 +1,20 @@
+# docker_hello.yaml
+---
+- name: hello from docker
+  tags:
+    - docker_hello
+  block:
+    - name: Run Hello World
+      community.docker.docker_container:
+        name: hello-world-container
+        image: hello-world
+      register: hello_world_result
+
+    - name: Print Hello World Result
+      ansible.builtin.debug:
+        msg: "{{ hello_world_result }}"
+
+  rescue:
+    - name: Handle errors during hello-world
+      ansible.builtin.debug:
+        msg: ":: HELLO WORLD ERROR :: "

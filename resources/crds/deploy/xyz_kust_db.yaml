@@ -1,0 +1,18 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: xyz-kust-db
+  namespace: flux-system
+spec:
+  healthChecks:
+  - kind: Deployment
+    name: db
+    namespace: xyz-fin-ns
+  interval: 1m0s
+  path: ./db
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: xyz-git-src
+  targetNamespace: xyz-fin-ns

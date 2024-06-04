@@ -1,0 +1,41 @@
+# cluster_install.yaml
+---
+- name: k8 cluster installation
+  become: true
+  become_user: root
+  tags:
+    - install
+  block:
+    - name: Download and Dearmor GPG key for Kubernetes repository
+      ansible.builtin.shell:
+        cmd: "curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg"
+      changed_when: false
+
+    - name: Add Kubernetes repository to sources.list
+      ansible.builtin.lineinfile:
+        path: "/etc/apt/sources.list.d/kubernetes.list"
+        line: 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /'
+        create: true
+        mode: "0666"
+
+    - name: Update Apt repos
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Install Kubernetes components
+      ansible.builtin.apt:
+        name:
+          - kubeadm
+          - kubelet
+          - kubectl
+        state: present
+
+    - name: Hold Kubernetes packages
+      ansible.builtin.shell:
+        cmd: "apt-mark hold kubeadm kubelet kubectl"
+      changed_when: false
+
+  rescue:
+    - name: Handle errors during k8 installation
+      ansible.builtin.debug:
+        msg: ":: INSTALL ERROR ::"

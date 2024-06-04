@@ -1,0 +1,18 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: xyz-kust-redis
+  namespace: flux-system
+spec:
+  healthChecks:
+  - kind: Deployment
+    name: redis
+    namespace: xyz-fin-ns
+  interval: 1m0s
+  path: ./redis
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: xyz-git-src
+  targetNamespace: xyz-fin-ns

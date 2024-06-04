@@ -1,0 +1,48 @@
+# cluster_init.yaml
+---
+- name: k8 cluster control plane init
+  become: true
+  become_user: root
+  vars:
+    cp_host: "k8smaster"
+  tags:
+    - init
+  block:
+    - name: Get the internal IP address of the master
+      ansible.builtin.shell: hostname -i
+      register: master_host_ip
+      delegate_to: "{{ cp_host }}"
+      when: cp_host in inventory_hostname
+      changed_when: false
+
+    - name: Save the IP address in a global fact
+      ansible.builtin.set_fact:
+        shared_host_ip: "{{ master_host_ip.stdout }}"
+      run_once: true
+
+    - name: Add shared_host_ip to /etc/hosts on all hosts
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        insertafter: BOF
+        line: "{{ shared_host_ip }} k8smaster"
+        state: present
+
+    - name: Copy ubeadm-config.yaml to cp /tmp
+      ansible.builtin.copy:
+        src: "{{ role_path }}/files/kubeadm-config.yaml"
+        dest: "/tmp/kubeadm-config.yaml"
+        mode: "0666"
+        force: true
+      delegate_to: "{{ cp_host }}"
+      when: cp_host in inventory_hostname
+
+    - name: Initialize the control plane
+      ansible.builtin.shell: kubeadm init --config=/tmp/kubeadm-config.yaml --upload-certs
+      delegate_to: "{{ cp_host }}"
+      when: "cp_host in inventory_hostname"
+      changed_when: false
+
+  rescue:
+    - name: Handle errors during cp init
+      ansible.builtin.debug:
+        msg: ":: CP INIT ERROR ::"

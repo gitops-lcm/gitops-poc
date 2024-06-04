@@ -1,0 +1,24 @@
+# flux_monitor.yaml
+---
+- name: patch flux_monitor service
+  tags:
+    - flux_monitor
+  vars:
+    ops_host: "ops"
+  block:
+    - name: Patch the kube-prometheus-stack-grafana service
+      kubernetes.core.k8s:
+        state: present
+        namespace: monitoring
+        kubeconfig: "{{ ansible_env.HOME }}/.kube/config"
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: kube-prometheus-stack-grafana
+          spec:
+            type: NodePort
+  rescue:
+    - name: Handle errors during kust crds
+      ansible.builtin.debug:
+        msg: ":: PATCH SERVICE ERROR :: "

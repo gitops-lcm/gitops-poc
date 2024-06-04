@@ -1,0 +1,25 @@
+# config_k8s.yaml
+---
+- name: config k8s for ops
+  tags:
+    - config_k8s
+  vars:
+    ops_host: "ops"
+    namespace: "xyz-fin-ns"
+  block:
+    - name: Create namespace xyz-fin-ns
+      kubernetes.core.k8s:
+        api_version: v1
+        kind: Namespace
+        name: "{{ namespace }}"
+        state: present
+
+    - name: Set namespace for current context to xyz-fin-ns
+      ansible.builtin.shell:
+        cmd: kubectl config set-context --current --namespace={{ namespace }}
+      changed_when: false
+
+  rescue:
+    - name: Handle errors during k8s config
+      ansible.builtin.debug:
+        msg: ":: K8S CONFIG ERROR :: "

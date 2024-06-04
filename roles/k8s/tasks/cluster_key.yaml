@@ -1,0 +1,52 @@
+# cluster_key.yaml
+---
+- name: k8 cluster key
+  become: true
+  become_user: root
+  vars:
+    cp_host: "k8smaster"
+  tags:
+    - key
+  block:
+    - name: Create Kubernetes token
+      ansible.builtin.command:
+        cmd: "sudo kubeadm token create"
+      register: cp_token
+      delegate_to: "{{ cp_host }}"
+      when: "cp_host in inventory_hostname"
+      changed_when: false
+
+    - name: Save Kubernetes token locally
+      ansible.builtin.copy:
+        content: "{{ cp_token.stdout }}"
+        dest: "{{ role_path }}/files/token.key"
+        mode: "0666"
+        force: true
+      delegate_to: localhost
+      when: "cp_host in inventory_hostname"
+
+    - name: Get SHA-256 fingerprint of CA public key
+      ansible.builtin.shell:
+        cmd: |
+          openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | \
+          openssl rsa -pubin -outform der 2>/dev/null | \
+          openssl dgst -sha256 -hex | \
+          sed -n 's/.* //p'
+      register: cp_pubkey
+      delegate_to: "{{ cp_host }}"
+      when: "cp_host in inventory_hostname"
+      changed_when: false
+
+    - name: Save SHA-256 fingerprint to local file
+      ansible.builtin.copy:
+        content: "{{ cp_pubkey.stdout }}"
+        dest: "{{ role_path }}/files/pub.key"
+        mode: '0666'
+        force: true
+      delegate_to: localhost
+      when: "cp_host in inventory_hostname"
+
+  rescue:
+    - name: Handle errors during join
+      ansible.builtin.debug:
+        msg: ":: KEY  ERROR ::"
