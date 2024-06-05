@@ -8,6 +8,7 @@
 - Ansible
 - Docker
 - Kubernetes
+- Cillium CNI
 - Flux CD gitops tool
 
 ## Deployment/ Installation Guide
@@ -144,4 +145,145 @@ To ``patch`` **kube-prometheus-stack-grafana** services for dashboard access -
 
 ```
 ansible-playbook patch_playbook.yaml
+```
+
+> Below is the project delivery directory structure to refer. 
+```
+.
+├── ansible.cfg
+├── inventory.ini
+├── k8s_playbook.yaml
+├── main.tf
+├── notify_playbook.yaml
+├── ops_playbook.yaml
+├── patch_playbook.yaml
+├── README.md
+├── requirements.txt
+├── resources
+│   ├── CaC.png
+│   ├── crds
+│   │   ├── deploy
+│   │   │   ├── xyz_kust_db.yaml
+│   │   │   ├── xyz_kust_redis.yaml
+│   │   │   ├── xyz_kust_result.yaml
+│   │   │   ├── xyz_kust_vote.yaml
+│   │   │   └── xyz_kust_worker.yml
+│   │   └── fluxops
+│   │       ├── monitoring.yaml
+│   │       ├── slack_alert_provider.yaml
+│   │       ├── slack_alert.yaml
+│   │       └── xyz_git_src.yaml
+│   ├── gitOps.png
+│   ├── gitops-poc-1-0b406afbb75c.json
+│   ├── IaC.png
+│   └── monitoring
+│       ├── configs
+│       │   ├── dashboards
+│       │   │   ├── cluster.json
+│       │   │   ├── control-plane.json
+│       │   │   └── logs.json
+│       │   ├── kustomization.yaml
+│       │   └── podmonitor.yaml
+│       └── controllers
+│           ├── kube-prometheus-stack
+│           │   ├── kube-state-metrics-config.yaml
+│           │   ├── kustomization.yaml
+│           │   ├── kustomizeconfig.yaml
+│           │   ├── namespace.yaml
+│           │   ├── release.yaml
+│           │   └── repository.yaml
+│           └── loki-stack
+│               ├── kustomization.yaml
+│               ├── release.yaml
+│               └── repository.yaml
+└── roles
+    ├── k8s
+    │   ├── defaults
+    │   │   └── main.yml
+    │   ├── files
+    │   │   ├── cilium-cni.yaml
+    │   │   └── kubeadm-config.yaml
+    │   ├── handlers
+    │   │   └── main.yml
+    │   ├── meta
+    │   │   └── main.yml
+    │   ├── README.md
+    │   ├── tasks
+    │   │   ├── cluster_cilium.yaml
+    │   │   ├── cluster_init.yaml
+    │   │   ├── cluster_install.yaml
+    │   │   ├── cluster_join.yaml
+    │   │   ├── cluster_key.yaml
+    │   │   ├── cluster_prep.yaml
+    │   │   ├── cluster_user.yaml
+    │   │   └── main.yml
+    │   ├── templates
+    │   ├── tests
+    │   │   ├── inventory
+    │   │   └── test.yml
+    │   └── vars
+    │       └── main.yml
+    ├── notify
+    │   ├── defaults
+    │   │   └── main.yml
+    │   ├── files
+    │   ├── handlers
+    │   │   └── main.yml
+    │   ├── meta
+    │   │   └── main.yml
+    │   ├── README.md
+    │   ├── tasks
+    │   │   ├── k8s_secret.yaml
+    │   │   └── main.yml
+    │   ├── templates
+    │   ├── tests
+    │   │   ├── inventory
+    │   │   └── test.yml
+    │   └── vars
+    │       └── main.yml
+    ├── ops
+    │   ├── defaults
+    │   │   └── main.yml
+    │   ├── files
+    │   ├── handlers
+    │   │   └── main.yml
+    │   ├── meta
+    │   │   └── main.yml
+    │   ├── README.md
+    │   ├── tasks
+    │   │   ├── config_flux.yaml
+    │   │   ├── config_git.yaml
+    │   │   ├── config_k8s.yaml
+    │   │   ├── docker_clean.yaml
+    │   │   ├── docker_hello.yaml
+    │   │   ├── docker_init.yaml
+    │   │   ├── flux_bootstrap.yaml
+    │   │   ├── k8s_client.yaml
+    │   │   └── main.yml
+    │   ├── templates
+    │   ├── tests
+    │   │   ├── inventory
+    │   │   └── test.yml
+    │   └── vars
+    │       └── main.yml
+    └── patch
+        ├── defaults
+        │   └── main.yml
+        ├── files
+        ├── handlers
+        │   └── main.yml
+        ├── meta
+        │   └── main.yml
+        ├── README.md
+        ├── tasks
+        │   ├── flux_monitor.yaml
+        │   └── main.yml
+        ├── templates
+        ├── tests
+        │   ├── inventory
+        │   └── test.yml
+        └── vars
+            └── main.yml
+
+48 directories, 87 files
 ```
