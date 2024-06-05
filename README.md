@@ -96,7 +96,7 @@ ansible-playbook notify_playbook.yaml
 ## gitOps in practice : Flux (gotk)
 
 ![gitOps-design](./resources/gitOps.png)
-*Figure 3 : gitOps using Flux gtok*
+*Figure 3 : gitOps using Flux gotk*
 
 > Flux systems repo created by flux during previous configuration phase -
   
@@ -316,4 +316,4 @@ ansible-playbook patch_playbook.yaml
 - **CD :** Continious Delivery
 - **URL :** Uniform Resource Locator
 - **PAT :** Personal Access Token
-- **gtok :** gitOps Tool Kit
+- **gotk :** gitOps Tool Kit
