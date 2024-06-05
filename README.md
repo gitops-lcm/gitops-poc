@@ -313,3 +313,6 @@ ansible-playbook patch_playbook.yaml
 - **WK  :** Worker Node
 - **OP  :** Operation Node
 - **CNI :** Cloud and Network Infrastructures
+- **CD :** Continious Delivery
+- **PAT :** Personal Access Token
+- **gtok :** gitOps Tool Kit
