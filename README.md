@@ -24,6 +24,7 @@
 - Target cloud OR/AND on-premises infrastructures configured for access from WSL in order to use Terrafom
 - WSL Linux configured with git
 - Generated git PAT available to use
+- Slack Incoming Webhook URL configured and available
 
 ## Infrastructure as Code (IaC) : Terraform
 
