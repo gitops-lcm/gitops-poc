@@ -314,5 +314,6 @@ ansible-playbook patch_playbook.yaml
 - **OP  :** Operation Node
 - **CNI :** Cloud and Network Infrastructures
 - **CD :** Continious Delivery
+- **URL :** Uniform Resource Locator
 - **PAT :** Personal Access Token
 - **gtok :** gitOps Tool Kit
