@@ -148,6 +148,17 @@ To ``patch`` **kube-prometheus-stack-grafana** services for dashboard access -
 ansible-playbook patch_playbook.yaml
 ```
 
+## References
+
+- [docs/ms/windows/wsl](https://learn.microsoft.com/en-us/windows/wsl/)
+- [docs/docker](https://docs.docker.com/)
+- [developer.hashicorp/terraform](https://developer.hashicorp.com/terraform?ajs_aid=d6ccb8ac-8203-44af-a8e4-4311b8763577&product_intent=terraform)
+- [docs/k8s](https://kubernetes.io/docs/home/)
+- [ansible/developers](https://docs.ansible.com/developers.html)
+- [git-scm](https://git-scm.com/book/en/v2)
+- [cilium/labs](https://cilium.io/labs/categories/getting-started/)
+- [fluxcd/gotk](https://fluxcd.io/flux/)
+
 > Below is the project delivery directory structure to refer. 
 ```
 .
@@ -288,3 +299,17 @@ ansible-playbook patch_playbook.yaml
 
 48 directories, 87 files
 ```
+
+## Abbreviations
+
+- **LCM :** Life Cycle Management 
+- **k8s :** Kubernetes
+- **POC :** Proof of Concept
+- **CNI :** Container Network Interface
+- **IaC :** Infrastructures as Code
+- **CaC :** Configurations as Code
+- **VM  :** Virtual Machine
+- **CP  :** Control Plane
+- **WK  :** Worker Node
+- **OP  :** Operation Node
+- **CNI :** Cloud and Network Infrastructures
