@@ -11,7 +11,7 @@
 - Cillium CNI
 - Flux CD gitops tool
 
-## Deployment/ Installation Guide
+## Deployment Guide
 
 ## Pre-requisities
 
@@ -148,6 +148,10 @@ To ``patch`` **kube-prometheus-stack-grafana** services for dashboard access -
 ansible-playbook patch_playbook.yaml
 ```
 
+![gitOps-design](./resources/gitOps-loop.png)
+*Figure 4 : gitOps loop*
+
+
 ## References
 
 - [docs/ms/windows/wsl](https://learn.microsoft.com/en-us/windows/wsl/)
@@ -158,6 +162,8 @@ ansible-playbook patch_playbook.yaml
 - [git-scm](https://git-scm.com/book/en/v2)
 - [cilium/labs](https://cilium.io/labs/categories/getting-started/)
 - [fluxcd/gotk](https://fluxcd.io/flux/)
+
+## Project Directory Structure
 
 > Below is the project delivery directory structure to refer. 
 ```
