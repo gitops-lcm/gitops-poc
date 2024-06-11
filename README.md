@@ -10,6 +10,7 @@
 - Kubernetes
 - Cillium CNI
 - Flux CD gitops tool
+- Vinto, N., & Bueno, A. S. (2022). GITOPs Cookbook. “O’Reilly Media, Inc.”
 
 ## Deployment Guide
 
