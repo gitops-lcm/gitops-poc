@@ -122,7 +122,7 @@ git commit -m "updated flux ops crds"
 git push origin main
 ```
 
-> Similarly place all your deployment CRDs at ``flux-infra/clusters/ops/`` and push locally updated ``flux-infra`` with deployment CRDs to ``main`` branch of remote git repository.
+> Similarly place all deployment CRDs at ``flux-infra/clusters/ops/`` and push locally updated ``flux-infra`` with deployment CRDs to ``main`` branch of remote git repository.
 
 ```
 cp ~/gitops-poc/resources/crds/deploy/* ~/flux-infra/clusters/ops/
@@ -150,18 +150,6 @@ ansible-playbook patch_playbook.yaml
 
 ![gitOps-design](./resources/gitOps-loop.png)
 *Figure 4 : gitOps loop*
-
-
-## References
-
-- [docs/ms/windows/wsl](https://learn.microsoft.com/en-us/windows/wsl/)
-- [docs/docker](https://docs.docker.com/)
-- [developer.hashicorp/terraform](https://developer.hashicorp.com/terraform?ajs_aid=d6ccb8ac-8203-44af-a8e4-4311b8763577&product_intent=terraform)
-- [docs/k8s](https://kubernetes.io/docs/home/)
-- [ansible/developers](https://docs.ansible.com/developers.html)
-- [git-scm](https://git-scm.com/book/en/v2)
-- [cilium/labs](https://cilium.io/labs/categories/getting-started/)
-- [fluxcd/gotk](https://fluxcd.io/flux/)
 
 ## Project Directory Structure
 
@@ -305,6 +293,17 @@ ansible-playbook patch_playbook.yaml
 
 48 directories, 87 files
 ```
+
+## References
+
+- [docs/ms/windows/wsl](https://learn.microsoft.com/en-us/windows/wsl/)
+- [docs/docker](https://docs.docker.com/)
+- [developer.hashicorp/terraform](https://developer.hashicorp.com/terraform?ajs_aid=d6ccb8ac-8203-44af-a8e4-4311b8763577&product_intent=terraform)
+- [docs/k8s](https://kubernetes.io/docs/home/)
+- [ansible/developers](https://docs.ansible.com/developers.html)
+- [git-scm](https://git-scm.com/book/en/v2)
+- [cilium/labs](https://cilium.io/labs/categories/getting-started/)
+- [fluxcd/gotk](https://fluxcd.io/flux/)
 
 ## Abbreviations
 
