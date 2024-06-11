@@ -154,7 +154,8 @@ ansible-playbook patch_playbook.yaml
 
 ## Project Directory Structure
 
-> Below is the project delivery directory structure to refer. 
+> Below is the project delivery directory structure to refer.
+
 ```
 .
 ├── ansible.cfg
@@ -180,6 +181,7 @@ ansible-playbook patch_playbook.yaml
 │   │       ├── slack_alert_provider.yaml
 │   │       ├── slack_alert.yaml
 │   │       └── xyz_git_src.yaml
+│   ├── gitOps-loop.png
 │   ├── gitOps.png
 │   ├── gitops-poc-1-0b406afbb75c.json
 │   ├── IaC.png
@@ -224,7 +226,6 @@ ansible-playbook patch_playbook.yaml
     │   │   ├── cluster_prep.yaml
     │   │   ├── cluster_user.yaml
     │   │   └── main.yml
-    │   ├── templates
     │   ├── tests
     │   │   ├── inventory
     │   │   └── test.yml
@@ -233,7 +234,6 @@ ansible-playbook patch_playbook.yaml
     ├── notify
     │   ├── defaults
     │   │   └── main.yml
-    │   ├── files
     │   ├── handlers
     │   │   └── main.yml
     │   ├── meta
@@ -242,7 +242,6 @@ ansible-playbook patch_playbook.yaml
     │   ├── tasks
     │   │   ├── k8s_secret.yaml
     │   │   └── main.yml
-    │   ├── templates
     │   ├── tests
     │   │   ├── inventory
     │   │   └── test.yml
@@ -251,7 +250,6 @@ ansible-playbook patch_playbook.yaml
     ├── ops
     │   ├── defaults
     │   │   └── main.yml
-    │   ├── files
     │   ├── handlers
     │   │   └── main.yml
     │   ├── meta
@@ -267,7 +265,6 @@ ansible-playbook patch_playbook.yaml
     │   │   ├── flux_bootstrap.yaml
     │   │   ├── k8s_client.yaml
     │   │   └── main.yml
-    │   ├── templates
     │   ├── tests
     │   │   ├── inventory
     │   │   └── test.yml
@@ -276,7 +273,6 @@ ansible-playbook patch_playbook.yaml
     └── patch
         ├── defaults
         │   └── main.yml
-        ├── files
         ├── handlers
         │   └── main.yml
         ├── meta
@@ -285,14 +281,13 @@ ansible-playbook patch_playbook.yaml
         ├── tasks
         │   ├── flux_monitor.yaml
         │   └── main.yml
-        ├── templates
         ├── tests
         │   ├── inventory
         │   └── test.yml
         └── vars
             └── main.yml
 
-48 directories, 87 files
+41 directories, 88 files
 ```
 
 ## References
