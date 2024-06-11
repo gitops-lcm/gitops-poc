@@ -10,7 +10,6 @@
 - Kubernetes
 - Cillium CNI
 - Flux CD gitops tool
-- Vinto, N., & Bueno, A. S. (2022). GITOPs Cookbook. “O’Reilly Media, Inc.”
 
 ## Deployment Guide
 
@@ -300,6 +299,7 @@ ansible-playbook patch_playbook.yaml
 - [git-scm](https://git-scm.com/book/en/v2)
 - [cilium/labs](https://cilium.io/labs/categories/getting-started/)
 - [fluxcd/gotk](https://fluxcd.io/flux/)
+- Vinto, N., & Bueno, A. S. (2022). GITOPs Cookbook. “O’Reilly Media, Inc.”
 
 ## Abbreviations
 
