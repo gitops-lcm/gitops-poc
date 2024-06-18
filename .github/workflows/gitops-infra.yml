@@ -38,19 +38,30 @@ jobs:
       run: terraform validate
 
     - name: Terraform Plan
+      run: terraform plan -out=tfplan -input=false
+
+    - name: Terraform Plan
       run: terraform plan -input=false
 
     - name: Terraform Apply
       if: github.ref == 'refs/heads/"main"' && github.event_name == 'push'
       run: terraform apply -auto-approve -input=false
-
+      
+    - name: Check previous step status and run destroy if failed
+      if: ${{ failure() }}
+      run: terraform destroy -auto-approve
+      
     - name: Set Terraform Outputs as Environment Variables
       run: |
         echo "k8smaster_public_ip=$(terraform output -raw k8smaster_public_ip)" >> $GITHUB_ENV
         echo "k8sworker1_public_ip=$(terraform output -raw k8sworker1_public_ip)" >> $GITHUB_ENV
         echo "ops_public_ip=$(terraform output -raw ops_public_ip)" >> $GITHUB_ENV
         echo "ssh_user=$(terraform output -raw ssh_user)" >> $GITHUB_ENV
-
+        
+    - name: Check previous step status and run destroy if failed
+      if: ${{ failure() }}
+      run: terraform destroy -auto-approve
+      
     - name: Update Inventory File
       run: |
         sed -i "s/k8smaster ansible_host=.*/k8smaster ansible_host=${{ env.k8smaster_public_ip }} ansible_user=${{ env.ssh_user }}/" inventory.ini
