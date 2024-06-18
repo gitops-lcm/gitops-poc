@@ -38,31 +38,21 @@ jobs:
     - name: Terraform Destroy
       if: failure()
       run: terraform destroy -auto-approve
-      
+
     - name: Get Terraform Outputs
       id: outputs
       run: |
-        set -e
-        k8smaster_ip_var=$(terraform output -raw k8smaster_public_ip)
-        k8sworker1_ip_var=$(terraform output -raw k8sworker1_public_ip)
-        ops_ip_var=$(terraform output -raw ops_public_ip)
-        ssh_user_var=$(terraform output -raw ssh_user)
-        
-        echo "::set-env name=k8smaster_ip_env_var::$k8smaster_ip_var"
-        echo "::set-env name=k8sworker1_ip_env_var::$k8sworker1_ip_var"
-        echo "::set-env name=ops_ip_env_var::$ops_ip_var"
-        echo "::set-env name=ssh_user_env_var::$ssh_user_var"
-         
-    - name: Terraform Destroy
-      if: failure()
-      run: terraform destroy -auto-approve
-      
+        echo "k8smaster_public_ip=$(terraform output -raw k8smaster_public_ip)" >> $GITHUB_ENV
+        echo "k8sworker1_public_ip=$(terraform output -raw k8sworker1_public_ip)" >> $GITHUB_ENV
+        echo "ops_public_ip=$(terraform output -raw ops_public_ip)" >> $GITHUB_ENV
+        echo "ssh_user=$(terraform output -raw ssh_user)" >> $GITHUB_ENV
+
     - name: Update Inventory File
       run: |
-        sed -i "s/k8smaster ansible_host=.*/k8smaster ansible_host=${{ env.k8smaster_ip_env_var }} ansible_user=${{ env.ssh_user_env_var }}/" inventory.ini
-        sed -i "s/k8sworker1 ansible_host=.*/k8sworker1 ansible_host=${{ env.k8sworker1_ip_env_var }} ansible_user=${{ env.ssh_user_env_var }}/" inventory.ini
-        sed -i "s/ops ansible_host=.*/ops ansible_host=${{ env.ops_ip_env_var }} ansible_user=${{ env.ssh_user_env_var }}/" inventory.ini
-    
+        sed -i "s/k8smaster ansible_host=.*/k8smaster ansible_host=${{ env.k8smaster_public_ip }} ansible_user=${{ env.ssh_user }}/" inventory.ini
+        sed -i "s/k8sworker1 ansible_host=.*/k8sworker1 ansible_host=${{ env.k8sworker1_public_ip }} ansible_user=${{  env.ssh_user }}/" inventory.ini
+        sed -i "s/ops ansible_host=.*/ops ansible_host=${{ env.ops_public_ip }} ansible_user=${{  env.ssh_user }}/" inventory.ini
+
     - name: Terraform Destroy
       if: failure()
       run: terraform destroy -auto-approve
@@ -83,21 +73,21 @@ jobs:
       run: ansible-playbook k8s_playbook.yaml
       env:
         ANSIBLE_HOST_KEY_CHECKING: 'false'
-        ANSIBLE_REMOTE_USER: ${{ env.ssh_user_env_var }}
+        ANSIBLE_REMOTE_USER: ${{ env.ssh_user }}
         ANSIBLE_PRIVATE_KEY_FILE: ~/.ssh/id_ed25519
 
     - name: Run ops_playbook
       run: ansible-playbook ops_playbook.yaml
       env:
         ANSIBLE_HOST_KEY_CHECKING: 'false'
-        ANSIBLE_REMOTE_USER: ${{ env.ssh_user_env_var }}
+        ANSIBLE_REMOTE_USER: ${{ env.ssh_user }}
         ANSIBLE_PRIVATE_KEY_FILE: ~/.ssh/id_ed25519
 
     - name: Run notify_playbook
       run: ansible-playbook notify_playbook.yaml
       env:
         ANSIBLE_HOST_KEY_CHECKING: 'false'
-        ANSIBLE_REMOTE_USER: ${{ env.ssh_user_env_var }}
+        ANSIBLE_REMOTE_USER: ${{ env.ssh_user }}
         ANSIBLE_PRIVATE_KEY_FILE: ~/.ssh/id_ed25519
         
     - name: Clone flux-infra repository
@@ -147,7 +137,7 @@ jobs:
       run: ansible-playbook patch_playbook.yaml
       env:
         ANSIBLE_HOST_KEY_CHECKING: 'false'
-        ANSIBLE_REMOTE_USER: ${{ env.ssh_user_env_var }}
+        ANSIBLE_REMOTE_USER: ${{ env.ssh_user }}
         ANSIBLE_PRIVATE_KEY_FILE: ~/.ssh/id_ed25519
 
     - name: Terraform Destroy
