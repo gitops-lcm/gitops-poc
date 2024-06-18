@@ -47,19 +47,9 @@ jobs:
         k8sworker1_public_ip=$(terraform output -raw k8sworker1_public_ip)
         ops_public_ip=$(terraform output -raw ops_public_ip)
         ssh_user=$(terraform output -raw ssh_user)
-        
-        if [[ -n "$k8smaster_public_ip" && -n "$k8sworker1_public_ip" && -n "$ops_public_ip" && -n "$ssh_user" ]]; then
-          echo "k8smaster_public_ip=${k8smaster_public_ip}" >> $GITHUB_ENV
-          echo "k8sworker1_public_ip=${k8sworker1_public_ip}" >> $GITHUB_ENV
-          echo "ops_public_ip=${ops_public_ip}" >> $GITHUB_ENV
-          echo "ssh_user=${ssh_user}" >> $GITHUB_ENV
-        else
-          echo "Error: Missing or invalid Terraform output values"
-          exit 1
-        fi
-        
+         
     - name: Terraform Destroy
-      if: failure()
+      #if: failure()
       run: terraform destroy -auto-approve
       
     - name: Update Inventory File
