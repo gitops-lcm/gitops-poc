@@ -65,10 +65,13 @@ jobs:
         mkdir -p ~/.ssh
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
         chmod 600 ~/.ssh/id_ed25519
-      
+        
     - name: Add known hosts
-      run: ssh-keyscan -H ${{ env.k8smaster_ip_env_var }} ${{ env.k8sworker1_ip_env_var }} ${{ env.ops_ip_env_var }} >> ~/.ssh/known_hosts
-
+      run: |
+        ssh-keyscan -H ${{ env.k8smaster_public_ip }} >> ~/.ssh/known_hosts
+        ssh-keyscan -H ${{ env.k8sworker1_public_ip }} >> ~/.ssh/known_hosts
+        ssh-keyscan -H ${{ env.ops_public_ip }} >> ~/.ssh/known_hosts
+      
     - name: Run k8s_playbook
       run: ansible-playbook k8s_playbook.yaml
       env:
