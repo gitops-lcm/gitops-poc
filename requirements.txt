@@ -94,7 +94,3 @@ yamllint==1.33.0
 jxmlease
 ncclient
 wheel
-python3-dev
-libffi-dev
-libssl-dev
-kubernetes
