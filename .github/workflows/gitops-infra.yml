@@ -51,6 +51,7 @@ jobs:
         echo "k8sworker1_ip_env_var=$k8sworker1_ip_var" >> $GITHUB_ENV
         echo "ops_ip_env_var=$ops_ip_var" >> $GITHUB_ENV
         echo "ssh_user_env_var=$ssh_user_var" >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
          
     - name: Terraform Destroy
       if: failure()
