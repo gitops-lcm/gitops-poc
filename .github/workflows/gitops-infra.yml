@@ -94,7 +94,7 @@ jobs:
         ANSIBLE_PRIVATE_KEY_FILE: ~/.ssh/id_ed25519
         
     - name: Clone flux-infra repository
-      run: git clone https://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@github.com/gitops-lcm/flux-infra.git github/workspace/flux-infra
+      run: git clone https://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@github.com/gitops-lcm/flux-infra.git /home/runner/work/gitops-poc/flux-infra
   
     - name: Debug Workflow Directory
       run: |
@@ -102,50 +102,46 @@ jobs:
         ls -l /home/runner/work/gitops-poc/
 
     - name: Copy Monitoring Directory
-      run: |
-        cp -r github/workspace/gitops-poc/resources/monitoring github/workspace/flux-infra
+      run: cp -r /home/runner/work/gitops-poc/gitops-poc/resources/monitoring /home/runner/work/gitops-poc/flux-infra
 
     - name: Copy flux operator CRDs to flux-infra
-      run: |
-        cp github/workspace/gitops-poc/resources/crds/fluxops/* github/workspace/flux-infra/clusters/ops/
+      run: cp /home/runner/work/gitops-poc/gitops-poc/resources/crds/fluxops/* /home/runner/work/gitops-poc/flux-infra/clusters/ops/
 
     - name: Git add changes
-      working-directory: github/workspace/flux-infra
-      run: |
-        git add .
+      working-directory: /home/runner/work/gitops-poc/flux-infra
+      run: git add .
 
     - name: Git commit changes
-      working-directory: github/workspace/flux-infra
-      run: |
-        git commit -m "updated flux ops crds"
+      working-directory: /home/runner/work/gitops-poc/flux-infra
+      run: git commit -m "updated flux ops crds"
 
     - name: Git push changes to main branch
-      working-directory: github/workspace/flux-infra
+      working-directory: /home/runner/work/gitops-poc/flux-infra
       run: git push origin main
 
     - name: Wait for 30 seconds
       run: sleep 30
 
     - name: Copy flux deployment CRDs to flux-infra
-      run: cp github/workspace/gitops-poc/resources/crds/deploy/* github/workspace/flux-infra/clusters/ops/
+      run: cp /home/runner/work/gitops-poc/gitops-poc/resources/crds/deploy/* /home/runner/work/gitops-poc/flux-infra/clusters/ops/
 
     - name: Git add changes
-      working-directory: github/workspace/flux-infra
+      working-directory: /home/runner/work/gitops-poc/flux-infra
       run: git add .
 
     - name: Git commit changes
-      working-directory: github/workspace/flux-infra
+      working-directory: /home/runner/work/gitops-poc/flux-infra
       run: git commit -m "updated flux deploy crds"
 
     - name: Git push changes to main branch
-      working-directory: github/workspace/flux-infra
+      working-directory: /home/runner/work/gitops-poc/flux-infra
       run: git push origin main
 
     - name: Wait for 30 seconds
       run: sleep 30
     
     - name: Run patch_playbook
-      working-directory: github/workspace/gitops-poc/
+      working-directory: /home/runner/work/gitops-poc/gitops-poc/
       run: ansible-playbook patch_playbook.yaml
       env:
         ANSIBLE_HOST_KEY_CHECKING: 'false'
