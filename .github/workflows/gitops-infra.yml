@@ -99,7 +99,7 @@ jobs:
     - name: Debug Workflow Directory
       run: |
         pwd
-        ls -l github/workspace/gitops-poc/resources
+        ls -l /home/runner/work
 
     - name: Copy Monitoring Directory
       run: |
