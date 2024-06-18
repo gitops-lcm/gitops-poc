@@ -1,0 +1,146 @@
+
+name: gitops IaC CaC Workflow
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  infra:
+    name: 'Terraform'
+    runs-on: ubuntu-latest
+    #environment: production
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.0.0
+
+    - name: Terraform Init
+      run: terraform init
+
+    - name: Terraform Format
+      run: terraform fmt -check
+
+    - name: Terraform Plan
+      run: terraform plan -input=false
+
+    - name: Terraform Apply
+      if: github.ref == 'refs/heads/"main"' && github.event_name == 'push'
+      run: terraform apply -auto-approve -input=false
+
+    - name: Get Terraform Outputs
+      id: outputs
+      run: |
+        echo "k8smaster_public_ip=$(terraform output -raw k8smaster_public_ip)" >> $GITHUB_ENV
+        echo "k8sworker1_public_ip=$(terraform output -raw k8sworker1_public_ip)" >> $GITHUB_ENV
+        echo "ops_public_ip=$(terraform output -raw ops_public_ip)" >> $GITHUB_ENV
+        echo "ssh_user=$(terraform output -raw ssh_user)" >> $GITHUB_ENV
+
+    - name: Update Inventory File
+      run: |
+        sed -i "s/k8smaster ansible_host=.*/k8smaster ansible_host=${{ env.k8smaster_public_ip }} ansible_user=${{ env.ssh_user }}/" inventory.ini
+        sed -i "s/k8sworker1 ansible_host=.*/k8sworker1 ansible_host=${{ env.k8sworker1_public_ip }} ansible_user=${{ env.ssh_user }}/" inventory.ini
+        sed -i "s/ops ansible_host=.*/ops ansible_host=${{ env.ops_public_ip }} ansible_user=${{ env.ssh_user }}/" inventory.ini
+
+    - name: Install Ansible
+      run: sudo apt-get update && sudo apt-get install -y ansible
+
+    - name: Install Ansible dependencies
+      run: |
+        sudo apt-get install -y python3-pip
+        pip3 install -r requirements.txt
+
+    - name: Add SSH key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+        chmod 600 ~/.ssh/id_ed25519
+      
+    - name: Add known hosts
+      run: ssh-keyscan -H ${{ env.k8smaster_public_ip }} ${{ env.k8sworker1_public_ip }} ${{ env.ops_public_ip }} >> ~/.ssh/known_hosts
+    
+    - name: Run k8s_playbook
+      run: ansible-playbook k8s_playbook.yaml
+      env:
+        ANSIBLE_HOST_KEY_CHECKING: 'false'
+        ANSIBLE_REMOTE_USER: ${{ env.ssh_user }}
+        ANSIBLE_PRIVATE_KEY_FILE: ~/.ssh/id_ed25519
+
+    - name: Run ops_playbook
+      run: ansible-playbook ops_playbook.yaml
+      env:
+        ANSIBLE_HOST_KEY_CHECKING: 'false'
+        ANSIBLE_REMOTE_USER: ${{ env.ssh_user }}
+        ANSIBLE_PRIVATE_KEY_FILE: ~/.ssh/id_ed25519
+
+    - name: Run notify_playbook
+      run: ansible-playbook notify_playbook.yaml
+      env:
+        ANSIBLE_HOST_KEY_CHECKING: 'false'
+        ANSIBLE_REMOTE_USER: ${{ env.ssh_user }}
+        ANSIBLE_PRIVATE_KEY_FILE: ~/.ssh/id_ed25519
+        
+    - name: Clone flux-infra repository
+      run: git clone https://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@github.com/gitops-lcm/flux-infra.git github/workspace/flux-infra
+  
+    - name: Copy monitoring folder to flux-infra
+      run: cp -r github/workspace/gitops-poc/resources/monitoring github/workspace/flux-infra
+
+    - name: Copy flux operator CRDs to flux-infra
+      run: cp github/workspace/gitops-poc/resources/crds/fluxops/* github/workspace/flux-infra/clusters/ops/
+
+    - name: Navigate to flux-infra/
+      run: cd github/workspace/flux-infra/
+
+    - name: Git add changes
+      run: git add .
+
+    - name: Git commit changes
+      run: git commit -m "updated flux ops crds"
+
+    - name: Git push changes to main branch
+      run: git push origin main
+
+    - name: Wait for 30 seconds
+      run: sleep 30
+
+    - name: Copy flux deployment CRDs to flux-infra
+      run: cp github/workspace/gitops-poc/resources/crds/deploy/* github/workspace/flux-infra/clusters/ops/
+
+    - name: Git add changes
+      run: git add .
+
+    - name: Git commit changes
+      run: git commit -m "updated flux deploy crds"
+
+    - name: Git push changes to main branch
+      run: git push origin main
+
+    - name: Wait for 30 seconds
+      run: sleep 30
+    
+    - name: Navigate to flux-infra/
+      run: cd github/workspace/gitops-poc/
+      
+    - name: Run patch_playbook
+      run: ansible-playbook patch_playbook.yaml
+      env:
+        ANSIBLE_HOST_KEY_CHECKING: 'false'
+        ANSIBLE_REMOTE_USER: ${{ env.ssh_user }}
+        ANSIBLE_PRIVATE_KEY_FILE: ~/.ssh/id_ed25519
