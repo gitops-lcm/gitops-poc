@@ -99,7 +99,7 @@ jobs:
     - name: Debug Workflow Directory
       run: |
         pwd
-        ls -l /home/runner/work
+        ls -l /home/runner/work/gitops-poc/
 
     - name: Copy Monitoring Directory
       run: |
