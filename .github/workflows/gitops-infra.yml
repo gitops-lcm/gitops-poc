@@ -42,14 +42,18 @@ jobs:
       id: outputs
       run: |
         set -e
-        
         k8smaster_public_ip=$(terraform output -raw k8smaster_public_ip)
         k8sworker1_public_ip=$(terraform output -raw k8sworker1_public_ip)
         ops_public_ip=$(terraform output -raw ops_public_ip)
         ssh_user=$(terraform output -raw ssh_user)
+        
+        echo "k8smaster_public_ip=${k8smaster_public_ip}" >> $GITHUB_ENV
+        echo "k8sworker1_public_ip=${k8sworker1_public_ip}" >> $GITHUB_ENV
+        echo "ops_public_ip=${ops_public_ip}" >> $GITHUB_ENV
+        echo "ssh_user=${ssh_user}" >> $GITHUB_ENV
          
     - name: Terraform Destroy
-      #if: failure()
+      if: failure()
       run: terraform destroy -auto-approve
       
     - name: Update Inventory File
@@ -64,11 +68,6 @@ jobs:
       
     - name: Install Ansible
       run: sudo apt-get update && sudo apt-get install -y ansible
-
-    - name: Install Ansible dependencies
-      run: |
-        sudo apt-get install -y python3-pip
-        pip3 install -r requirements.txt
 
     - name: Add SSH key
       run: |
@@ -152,4 +151,7 @@ jobs:
 
     - name: Terraform Destroy
       if: failure()
+      run: terraform destroy -auto-approve
+      
+    - name: Terraform Destroy
       run: terraform destroy -auto-approve
