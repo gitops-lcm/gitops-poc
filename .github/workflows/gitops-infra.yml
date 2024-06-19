@@ -184,6 +184,7 @@ jobs:
       run: terraform plan -destroy -out=tfplan-destroy -input=false
 
     - name: Terraform Destroy
+      if: failure()
       run: terraform apply -auto-approve tfplan-destroy
 
     - name: Terraform Destroy
