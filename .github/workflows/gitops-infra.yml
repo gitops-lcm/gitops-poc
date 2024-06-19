@@ -28,6 +28,9 @@ jobs:
     - name: Terraform Init
       run: terraform init
 
+    - name: Terraform Destroy Existing Resources
+      run: terraform destroy -auto-approve
+
     - name: Terraform Plan
       run: terraform plan -out=tfplan -input=false
 
@@ -152,6 +155,13 @@ jobs:
         ANSIBLE_HOST_KEY_CHECKING: 'false'
         ANSIBLE_REMOTE_USER: ${{ env.ssh_user }}
         ANSIBLE_PRIVATE_KEY_FILE: ~/.ssh/id_ed25519
+
+    - name: Print environment variables
+      run: |
+        echo "k8smaster_public_ip=${{ env.k8smaster_public_ip }}"
+        echo "k8sworker1_public_ip=${{ env.k8sworker1_public_ip }}"
+        echo "ops_public_ip=${{ env.ops_public_ip }}"
+        echo "ssh_user=${{ env.ssh_user }}"
 
     - name: Terraform Destroy
       if: failure()
