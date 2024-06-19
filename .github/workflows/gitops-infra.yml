@@ -156,7 +156,7 @@ jobs:
     
     - name: Run patch_playbook
       working-directory: /home/runner/work/gitops-poc/gitops-poc/
-      run: ansible-playbook patch_playbook.yaml -vvv
+      run: ansible-playbook patch_playbook.yaml
       env:
         ANSIBLE_HOST_KEY_CHECKING: 'false'
         ANSIBLE_REMOTE_USER: ${{ env.ssh_user }}
@@ -168,21 +168,19 @@ jobs:
         echo "k8sworker1_public_ip=${{ env.k8sworker1_public_ip }}"
         echo "ops_public_ip=${{ env.ops_public_ip }}"
         echo "ssh_user=${{ env.ssh_user }}"
-
-    - name: Terraform Destroy
-      if: failure()
-      run: terraform destroy -auto-approve
-      
-    - name: Terraform Destroy
-      run: terraform destroy -auto-approve
       
     - name: Delete Repository
+      if: failure()
       env:
         GITHUB_PAT: ${{ secrets.PAT }}
-        REPO_OWNER: ${{ github.repository_owner }}
-        REPO_NAME: ${{ github.event.repository.name }}
+        REPO_OWNER: ${{ github.gitops-lcm }}
+        REPO_NAME: ${{ github.event.repository.gitops-poc }}
       run: |
+        terraform destroy -auto-approve
         curl -X DELETE \
           -H "Authorization: token $PAT" \
           -H "Accept: application/vnd.github.v3+json" \
           https://api.github.com/repos/$REPO_OWNER/$REPO_NAME
+
+    - name: Terraform Destroy
+      run: terraform destroy -auto-approve
