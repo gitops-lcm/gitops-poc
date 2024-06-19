@@ -28,11 +28,14 @@ jobs:
     - name: Terraform Init
       run: terraform init
 
-    - name: Terraform Plan Destroy
+    - name: Generate Terraform Destroy Plan
       run: terraform plan -destroy -out=tfplan-destroy -input=false
 
-    - name: Terraform Apply Destroy
+    - name: Apply Terraform Destroy Plan
       run: terraform apply -auto-approve tfplan-destroy
+
+    - name: Force Destroy (if needed)
+      run: terraform destroy -auto-approve || echo "Force destroy attempt completed."
 
     - name: Terraform Plan
       run: terraform plan -out=tfplan -input=false
