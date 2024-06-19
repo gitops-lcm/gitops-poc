@@ -107,6 +107,11 @@ jobs:
     - name: Copy flux operator CRDs to flux-infra
       run: cp /home/runner/work/gitops-poc/gitops-poc/resources/crds/fluxops/* /home/runner/work/gitops-poc/flux-infra/clusters/ops/
 
+    - name: Set up Git user
+      run: |
+        git config --global user.email "eashin.matubber@ericsson.com.com"
+        git config --global user.name "Eashin Matubber"
+
     - name: Git add changes
       working-directory: /home/runner/work/gitops-poc/flux-infra
       run: git add .
