@@ -172,3 +172,6 @@ jobs:
     - name: Terraform Destroy
       if: failure()
       run: terraform destroy -auto-approve
+      
+    - name: Terraform Destroy
+      run: terraform destroy -auto-approve
