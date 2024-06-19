@@ -142,12 +142,12 @@ jobs:
       working-directory: /home/runner/work/gitops-poc/flux-infra
       run: git push origin main
 
-    - name: Wait for 30 seconds
-      run: sleep 30
+    - name: Wait for 60 seconds
+      run: sleep 60
     
     - name: Run patch_playbook
       working-directory: /home/runner/work/gitops-poc/gitops-poc/
-      run: ansible-playbook patch_playbook.yaml
+      run: ansible-playbook patch_playbook.yaml -vvv
       env:
         ANSIBLE_HOST_KEY_CHECKING: 'false'
         ANSIBLE_REMOTE_USER: ${{ env.ssh_user }}
@@ -155,7 +155,4 @@ jobs:
 
     - name: Terraform Destroy
       if: failure()
-      run: terraform destroy -auto-approve
-      
-    - name: Terraform Destroy
       run: terraform destroy -auto-approve
