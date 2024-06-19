@@ -28,14 +28,8 @@ jobs:
     - name: Terraform Init
       run: terraform init
 
-    - name: Generate Terraform Destroy Plan
-      run: terraform plan -destroy -out=tfplan-destroy -input=false
-
-    - name: Apply Terraform Destroy Plan
-      run: terraform apply -auto-approve tfplan-destroy
-
-    - name: Force Destroy (if needed)
-      run: terraform destroy -auto-approve || echo "Force destroy attempt completed."
+    - name: Terraform Validate
+      run: terrform validate
 
     - name: Terraform Plan
       run: terraform plan -out=tfplan -input=false
@@ -55,7 +49,35 @@ jobs:
         echo "k8sworker1_public_ip=$(terraform output -raw k8sworker1_public_ip)" >> $GITHUB_ENV
         echo "ops_public_ip=$(terraform output -raw ops_public_ip)" >> $GITHUB_ENV
         echo "ssh_user=$(terraform output -raw ssh_user)" >> $GITHUB_ENV
+        
+    - name: Save Terraform State
+      run: mv terraform.tfstate terraform_state.tfstate
 
+    - name: Debug Terraform State
+      run: cat terraform_state.tfstate
+
+    - name: Upload Terraform State
+      uses: actions/upload-artifact@v3
+      with:
+        name: terraform-state
+        path: terraform_state.tfstate
+
+    - name: Save Output Variables
+      run: |
+        echo "k8smaster_public_ip=${{ env.k8smaster_public_ip }}" >> terraform_outputs.env
+        echo "k8sworker1_public_ip=${{ env.k8sworker1_public_ip }}" >> terraform_outputs.env
+        echo "ops_public_ip=${{ env.ops_public_ip }}" >> terraform_outputs.env
+        echo "ssh_user=${{ env.ssh_user }}" >> terraform_outputs.env
+
+    - name: Debug Output Variables
+      run: cat terraform_outputs.env
+
+    - name: Upload Output Variables
+      uses: actions/upload-artifact@v3
+      with:
+        name: terraform-outputs
+        path: terraform_outputs.env
+          
     - name: Update Inventory File
       run: |
         sed -i "s/k8smaster ansible_host=.*/k8smaster ansible_host=${{ env.k8smaster_public_ip }} ansible_user=${{ env.ssh_user }}/" inventory.ini
@@ -101,25 +123,20 @@ jobs:
         ANSIBLE_HOST_KEY_CHECKING: 'false'
         ANSIBLE_REMOTE_USER: ${{ env.ssh_user }}
         ANSIBLE_PRIVATE_KEY_FILE: ~/.ssh/id_ed25519
-        
+
+    - name: Set up Git user
+      run: |
+        git config --global user.email "eashin.matubber@ericsson.com.com"
+        git config --global user.name "Eashin Matubber"
+
     - name: Clone flux-infra repository
       run: git clone https://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@github.com/gitops-lcm/flux-infra.git /home/runner/work/gitops-poc/flux-infra
-  
-    - name: Debug Workflow Directory
-      run: |
-        pwd
-        ls -l /home/runner/work/gitops-poc/
 
     - name: Copy Monitoring Directory
       run: cp -r /home/runner/work/gitops-poc/gitops-poc/resources/monitoring /home/runner/work/gitops-poc/flux-infra
 
     - name: Copy flux operator CRDs to flux-infra
       run: cp /home/runner/work/gitops-poc/gitops-poc/resources/crds/fluxops/* /home/runner/work/gitops-poc/flux-infra/clusters/ops/
-
-    - name: Set up Git user
-      run: |
-        git config --global user.email "eashin.matubber@ericsson.com.com"
-        git config --global user.name "Eashin Matubber"
 
     - name: Git add changes
       working-directory: /home/runner/work/gitops-poc/flux-infra
@@ -161,22 +178,10 @@ jobs:
         ANSIBLE_HOST_KEY_CHECKING: 'false'
         ANSIBLE_REMOTE_USER: ${{ env.ssh_user }}
         ANSIBLE_PRIVATE_KEY_FILE: ~/.ssh/id_ed25519
-
-    - name: Print environment variables
-      run: |
-        echo "k8smaster_public_ip=${{ env.k8smaster_public_ip }}"
-        echo "k8sworker1_public_ip=${{ env.k8sworker1_public_ip }}"
-        echo "ops_public_ip=${{ env.ops_public_ip }}"
-        echo "ssh_user=${{ env.ssh_user }}"
-      
+   
     - name: Delete Repository
       if: failure()
-      run: |
-        terraform destroy -auto-approve
-        curl -X DELETE \
-          -H "Authorization: token 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" \
-          -H "Accept: application/vnd.github.v3+json" \
-          https://api.github.com/repos/gitops-lcm/flux-infra
+      run: terraform destroy -auto-approve
 
     - name: Terraform Destroy
       run: terraform destroy -auto-approve
