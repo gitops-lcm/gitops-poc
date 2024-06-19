@@ -28,8 +28,11 @@ jobs:
     - name: Terraform Init
       run: terraform init
 
-    - name: Terraform Destroy Existing Resources
-      run: terraform destroy -auto-approve
+    - name: Terraform Plan Destroy
+      run: terraform plan -destroy -out=tfplan-destroy -input=false
+
+    - name: Terraform Apply Destroy
+      run: terraform apply -auto-approve tfplan-destroy
 
     - name: Terraform Plan
       run: terraform plan -out=tfplan -input=false
