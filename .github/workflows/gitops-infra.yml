@@ -171,16 +171,12 @@ jobs:
       
     - name: Delete Repository
       if: failure()
-      env:
-        GITHUB_PAT: ${{ secrets.PAT }}
-        REPO_OWNER: ${{ github.gitops-lcm }}
-        REPO_NAME: ${{ github.event.repository.gitops-poc }}
       run: |
         terraform destroy -auto-approve
         curl -X DELETE \
-          -H "Authorization: token $PAT" \
+          -H "Authorization: token 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" \
           -H "Accept: application/vnd.github.v3+json" \
-          https://api.github.com/repos/$REPO_OWNER/$REPO_NAME
+          https://api.github.com/repos/gitops-lcm/flux-infra
 
     - name: Terraform Destroy
       run: terraform destroy -auto-approve
