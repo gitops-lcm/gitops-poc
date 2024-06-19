@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
+    inputs:
+      destroy:
+        description: "Run destroy job"
+        required: false
+        default: "false"
 
 jobs:
   infra:
@@ -42,7 +47,7 @@ jobs:
         echo "k8sworker1_public_ip=$(terraform output -raw k8sworker1_public_ip)" >> $GITHUB_ENV
         echo "ops_public_ip=$(terraform output -raw ops_public_ip)" >> $GITHUB_ENV
         echo "ssh_user=$(terraform output -raw ssh_user)" >> $GITHUB_ENV
-        
+
     - name: Save Terraform State
       run: mv terraform.tfstate terraform_state.tfstate
 
@@ -70,13 +75,13 @@ jobs:
       with:
         name: terraform-outputs
         path: terraform_outputs.env
-          
+
     - name: Update Inventory File
       run: |
         sed -i "s/k8smaster ansible_host=.*/k8smaster ansible_host=${{ env.k8smaster_public_ip }} ansible_user=${{ env.ssh_user }}/" inventory.ini
-        sed -i "s/k8sworker1 ansible_host=.*/k8sworker1 ansible_host=${{ env.k8sworker1_public_ip }} ansible_user=${{  env.ssh_user }}/" inventory.ini
-        sed -i "s/ops ansible_host=.*/ops ansible_host=${{ env.ops_public_ip }} ansible_user=${{  env.ssh_user }}/" inventory.ini
- 
+        sed -i "s/k8sworker1 ansible_host=.*/k8sworker1 ansible_host=${{ env.k8sworker1_public_ip }} ansible_user=${{ env.ssh_user }}/" inventory.ini
+        sed -i "s/ops ansible_host=.*/ops ansible_host=${{ env.ops_public_ip }} ansible_user=${{ env.ssh_user }}/" inventory.ini
+
     - name: Install Ansible
       run: sudo apt-get update && sudo apt-get install -y ansible
 
@@ -85,13 +90,13 @@ jobs:
         mkdir -p ~/.ssh
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
         chmod 600 ~/.ssh/id_ed25519
-        
+
     - name: Add known hosts
       run: |
         ssh-keyscan -H ${{ env.k8smaster_public_ip }} >> ~/.ssh/known_hosts
         ssh-keyscan -H ${{ env.k8sworker1_public_ip }} >> ~/.ssh/known_hosts
         ssh-keyscan -H ${{ env.ops_public_ip }} >> ~/.ssh/known_hosts
-      
+
     - name: Run k8s_playbook
       run: ansible-playbook k8s_playbook.yaml
       env:
@@ -115,12 +120,11 @@ jobs:
 
     - name: Set up Git user
       run: |
-        git config --global user.email "eashin.matubber@ericsson.com.com"
+        git config --global user.email "eashin.matubber@ericsson.com"
         git config --global user.name "Eashin Matubber"
 
     - name: Clone flux-infra repository
-      run: git clone https://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@github.com/gitops-lcm/flux-infra.git /home/runner/work/gitops-poc/flux-infra
-
+      run:  git clone https://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@github.com/gitops-lcm/flux-infra.git /home/runner/work/gitops-poc/flux-infra
     - name: Copy Monitoring Directory
       run: cp -r /home/runner/work/gitops-poc/gitops-poc/resources/monitoring /home/runner/work/gitops-poc/flux-infra
 
@@ -159,7 +163,7 @@ jobs:
 
     - name: Wait for 60 seconds
       run: sleep 60
-    
+
     - name: Run patch_playbook
       working-directory: /home/runner/work/gitops-poc/gitops-poc/
       run: ansible-playbook patch_playbook.yaml
@@ -167,7 +171,22 @@ jobs:
         ANSIBLE_HOST_KEY_CHECKING: 'false'
         ANSIBLE_REMOTE_USER: ${{ env.ssh_user }}
         ANSIBLE_PRIVATE_KEY_FILE: ~/.ssh/id_ed25519
-        
+
+  destroy:
+    name: Destroy Infrastructure
+    runs-on: ubuntu-latest
+    needs: infra
+    if: github.event.inputs.destroy == 'true' || failure()
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.0.0
+        terraform_wrapper: false
+
     - name: Download Terraform State
       uses: actions/download-artifact@v3
       with:
@@ -177,15 +196,17 @@ jobs:
     - name: Debug Terraform State
       run: cat terraform_state.tfstate
 
+    - name: Terraform Init
+      run: terraform init
+
     - name: Restore Terraform State
       run: mv terraform_state.tfstate terraform.tfstate
 
     - name: Terraform Plan Destroy
       run: terraform plan -destroy -out=tfplan-destroy -input=false
 
-    - name: Terraform Destroy
-      if: failure()
-      run: terraform apply -auto-approve tfplan-destroy
+    - name: Debug Destroy Plan
+      run: cat tfplan-destroy
 
     - name: Terraform Destroy
-      run: terraform destroy -auto-approve
+      run: terraform apply -auto-approve tfplan-destroy
