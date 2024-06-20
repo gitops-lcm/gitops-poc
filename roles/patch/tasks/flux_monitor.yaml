@@ -6,21 +6,6 @@
   vars:
     ops_host: "ops"
   block:
-    - name: Patch the kube-prometheus-stack-grafana service
-      kubernetes.core.k8s:
-        state: present
-        namespace: monitoring
-        kubeconfig: "{{ ansible_env.HOME }}/.kube/config"
-        definition:
-          apiVersion: v1
-          kind: Service
-          metadata:
-            name: kube-prometheus-stack-grafana
-          spec:
-            type: NodePort
-      delegate_to: "{{ ops_host }}"
-      when: ops_host in inventory_hostname
-
     - name: Patch kube-prometheus-stack-grafana service to NodePort
       ansible.builtin.shell:
         cmd: >
