@@ -25,9 +25,12 @@ jobs:
         uses: google-github-actions/setup-gcloud@v0.2.1
         with:
           project_id: gitops-poc-1
-          working-directory: /home/runner/work/gitops-poc/gitops-poc/
-          service_account_key: ./resources/gitops-poc-1-0b406afbb75c.json
-      
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Authenticate to Google Cloud
+        working-directory: /home/runner/work/gitops-poc/gitops-poc/
+        run: gcloud auth activate-service-account --key-file=./resources/gitops-poc-1-0b406afbb75c.json
+
       - name: Terraform Init
         run: terraform init
 
