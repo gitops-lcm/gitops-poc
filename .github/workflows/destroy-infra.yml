@@ -21,17 +21,18 @@ jobs:
           terraform_version: 1.0.0
           terraform_wrapper: false
 
-      - name: Download Terraform State
-        uses: actions/download-artifact@v3
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0.2.1
         with:
-          name: terraform-state
-          path: .
-
+          project_id: gitops-poc-1
+          working-directory: /home/runner/work/gitops-poc/gitops-poc/
+          service_account_key: ./resources/gitops-poc-1-0b406afbb75c.json
+      
       - name: Terraform Init
         run: terraform init
 
       - name: Terraform Plan Destroy
-        run: terraform plan -refresh-only
+        run: terraform plan -destroy -out=tfplan -input=false
 
       - name: Terraform Apply Destroy
-        run: terraform destroy -auto-approve
+        run: terraform apply -auto-approve tfplan
