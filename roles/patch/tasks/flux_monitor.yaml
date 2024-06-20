@@ -18,6 +18,15 @@
             name: kube-prometheus-stack-grafana
           spec:
             type: NodePort
+
+    - name: Patch kube-prometheus-stack-grafana service to NodePort
+      ansible.builtin.shell:
+        cmd: >
+          kubectl patch service kube-prometheus-stack-grafana -p '{"spec":{"type": "NodePort"}}' -n monitoring
+      delegate_to: "{{ ops_host }}"
+      when: ops_host in inventory_hostname
+      changed_when: false
+
   rescue:
     - name: Handle errors during kust crds
       ansible.builtin.debug:
