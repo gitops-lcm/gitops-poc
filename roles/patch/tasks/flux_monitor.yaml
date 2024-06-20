@@ -9,7 +9,7 @@
     - name: Suspend monitoring-controllers Kustomization
       ansible.builtin.shell:
         cmd: >
-          flux suspend kustomization kube-prometheus-stack
+          flux suspend kustomization monitoring-controllers
       delegate_to: "{{ ops_host }}"
       when: ops_host in inventory_hostname
       changed_when: false
