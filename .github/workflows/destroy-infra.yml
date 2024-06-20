@@ -1,0 +1,37 @@
+name: Manual Destroy Workflow
+
+on:
+  workflow_dispatch:
+
+jobs:
+  destroy_infra:
+    name: 'Destroy Infra Job'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.0.0
+          terraform_wrapper: false
+
+      - name: Download Terraform State
+        uses: actions/download-artifact@v3
+        with:
+          name: terraform-state
+          path: .
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan Destroy
+        run: terraform plan -refresh-only
+
+      - name: Terraform Apply Destroy
+        run: terraform destroy -auto-approve
