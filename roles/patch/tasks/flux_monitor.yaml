@@ -6,13 +6,20 @@
   vars:
     ops_host: "ops"
   block:
-    - name: Suspend monitoring-controllers Kustomization
-      ansible.builtin.shell:
-        cmd: >
-          flux suspend kustomization monitoring-controllers
+    - name: Patch the kube-prometheus-stack-grafana service
+      kubernetes.core.k8s:
+        state: present
+        namespace: monitoring
+        kubeconfig: "{{ ansible_env.HOME }}/.kube/config"
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: kube-prometheus-stack-grafana
+          spec:
+            type: NodePort
       delegate_to: "{{ ops_host }}"
       when: ops_host in inventory_hostname
-      changed_when: false
 
     - name: Patch kube-prometheus-stack-grafana service to NodePort
       ansible.builtin.shell:
@@ -27,6 +34,4 @@
       ansible.builtin.debug:
         msg: ":: PATCH SERVICE ERROR :: "
 
-
-# flux suspend kustomization kube-prometheus-stack
 # kubectl patch service kube-prometheus-stack-grafana -p '{"spec":{"type": "NodePort"}}' -n monitoring
