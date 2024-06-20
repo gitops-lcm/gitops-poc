@@ -6,7 +6,7 @@
   vars:
     ops_host: "ops"
   block:
-    - name: Suspend kube-prometheus-stack Kustomization
+    - name: Suspend monitoring-controllers Kustomization
       ansible.builtin.shell:
         cmd: >
           flux suspend kustomization kube-prometheus-stack
