@@ -1,4 +1,4 @@
-name: gitops IaC CaC Workflow
+name: gitops Workflow
 
 on:
   push:
@@ -6,11 +6,6 @@ on:
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
-    inputs:
-      destroy:
-        description: "Run destroy job"
-        required: false
-        default: "false"
 
 jobs:
   infra:
@@ -31,10 +26,9 @@ jobs:
         terraform_wrapper: false
 
     - name: Terraform Init
-      run: terraform init
-
-    - name: Terraform Plan
-      run: terraform plan -out=tfplan -input=false
+      run: |
+        terraform init
+        terraform plan -out=tfplan -input=false
 
     - name: Terraform Apply
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -47,34 +41,6 @@ jobs:
         echo "k8sworker1_public_ip=$(terraform output -raw k8sworker1_public_ip)" >> $GITHUB_ENV
         echo "ops_public_ip=$(terraform output -raw ops_public_ip)" >> $GITHUB_ENV
         echo "ssh_user=$(terraform output -raw ssh_user)" >> $GITHUB_ENV
-
-    - name: Save Terraform State
-      run: mv terraform.tfstate terraform_state.tfstate
-
-    - name: Debug Terraform State
-      run: cat terraform_state.tfstate
-
-    - name: Upload Terraform State
-      uses: actions/upload-artifact@v3
-      with:
-        name: terraform-state
-        path: terraform_state.tfstate
-
-    - name: Save Output Variables
-      run: |
-        echo "k8smaster_public_ip=${{ env.k8smaster_public_ip }}" >> terraform_outputs.env
-        echo "k8sworker1_public_ip=${{ env.k8sworker1_public_ip }}" >> terraform_outputs.env
-        echo "ops_public_ip=${{ env.ops_public_ip }}" >> terraform_outputs.env
-        echo "ssh_user=${{ env.ssh_user }}" >> terraform_outputs.env
-
-    - name: Debug Output Variables
-      run: cat terraform_outputs.env
-
-    - name: Upload Output Variables
-      uses: actions/upload-artifact@v3
-      with:
-        name: terraform-outputs
-        path: terraform_outputs.env
 
     - name: Update Inventory File
       run: |
@@ -123,90 +89,40 @@ jobs:
         git config --global user.email "eashin.matubber@ericsson.com"
         git config --global user.name "Eashin Matubber"
 
-    - name: Clone flux-infra repository
-      run:  git clone https://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@github.com/gitops-lcm/flux-infra.git /home/runner/work/gitops-poc/flux-infra
-    - name: Copy Monitoring Directory
-      run: cp -r /home/runner/work/gitops-poc/gitops-poc/resources/monitoring /home/runner/work/gitops-poc/flux-infra
+    - name: Clone flux-infra repository and place monitor
+      run: |  
+        git clone https://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@github.com/gitops-lcm/flux-infra.git /home/runner/work/gitops-poc/flux-infra
+        cp -r /home/runner/work/gitops-poc/gitops-poc/resources/monitoring /home/runner/work/gitops-poc/flux-infra
+        cp /home/runner/work/gitops-poc/gitops-poc/resources/crds/fluxops/* /home/runner/work/gitops-poc/flux-infra/clusters/ops/
 
-    - name: Copy flux operator CRDs to flux-infra
-      run: cp /home/runner/work/gitops-poc/gitops-poc/resources/crds/fluxops/* /home/runner/work/gitops-poc/flux-infra/clusters/ops/
-
-    - name: Git add changes
+    - name: Git push monitor and flux-ops crds
       working-directory: /home/runner/work/gitops-poc/flux-infra
-      run: git add .
-
-    - name: Git commit changes
-      working-directory: /home/runner/work/gitops-poc/flux-infra
-      run: git commit -m "updated flux ops crds"
-
-    - name: Git push changes to main branch
-      working-directory: /home/runner/work/gitops-poc/flux-infra
-      run: git push origin main
-
-    - name: Wait for 30 seconds
-      run: sleep 30
+      run: |
+        git add .
+        git commit -m "updated flux ops crds"
+        git push origin main
+        sleep 30
 
     - name: Copy flux deployment CRDs to flux-infra
       run: cp /home/runner/work/gitops-poc/gitops-poc/resources/crds/deploy/* /home/runner/work/gitops-poc/flux-infra/clusters/ops/
 
-    - name: Git add changes
+    - name: Git push deployment crds
       working-directory: /home/runner/work/gitops-poc/flux-infra
-      run: git add .
-
-    - name: Git commit changes
-      working-directory: /home/runner/work/gitops-poc/flux-infra
-      run: git commit -m "updated flux deploy crds"
-
-    - name: Git push changes to main branch
-      working-directory: /home/runner/work/gitops-poc/flux-infra
-      run: git push origin main
-
-    - name: Wait for 60 seconds
-      run: sleep 60
+      run: |
+        git add .
+        git commit -m "updated flux deploy crds"
+        git push origin main
+        sleep 60
 
     - name: Run patch_playbook
       working-directory: /home/runner/work/gitops-poc/gitops-poc/
-      run: ansible-playbook patch_playbook.yaml
+      run: ansible-playbook patch_playbook.yaml -vvv
       env:
         ANSIBLE_HOST_KEY_CHECKING: 'false'
         ANSIBLE_REMOTE_USER: ${{ env.ssh_user }}
         ANSIBLE_PRIVATE_KEY_FILE: ~/.ssh/id_ed25519
-
-  destroy:
-    name: Destroy Infrastructure
-    runs-on: ubuntu-latest
-    needs: infra
-    if: github.event.inputs.destroy == 'true' || failure()
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v2
-      with:
-        terraform_version: 1.0.0
-        terraform_wrapper: false
-
-    - name: Download Terraform State
-      uses: actions/download-artifact@v3
-      with:
-        name: terraform-state
-        path: .
-
-    - name: Debug Terraform State
-      run: cat terraform_state.tfstate
-
-    - name: Terraform Init
-      run: terraform init
-
-    - name: Restore Terraform State
-      run: mv terraform_state.tfstate terraform.tfstate
-
-    - name: Terraform Plan Destroy
-      run: terraform plan -destroy -out=tfplan-destroy -input=false
-
-    - name: Debug Destroy Plan
-      run: cat tfplan-destroy
-
+        
     - name: Terraform Destroy
-      run: terraform apply -auto-approve tfplan-destroy
+      if: failure()
+      run: terraform destroy -auto-approve
+ 
