@@ -1,5 +1,4 @@
 name: gitops Workflow
-
 on:
   push:
     branches: [ "main" ]
