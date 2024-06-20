@@ -1,5 +1,10 @@
 # gitOps LCM of 5G k8s Infra
 
+> **Note:**
+> This deployment guide is to understand the bigger picture of the implementation of this project. And following this guideline it can be replicated manually.
+> For the poc purpose GitHub workflow tools used to automate the manual process. Which can be achieved similar way using another VCS tools (e.g. gitlab, bitbucket).
+
+
 ## Tools used
 
 - Windows Subsystem for Linux (WSL)

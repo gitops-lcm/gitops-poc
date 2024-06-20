@@ -6,7 +6,13 @@ terraform {
       version = "4.51.0"  
     }
   }
-  required_version = ">= 1.0.0"  
+  required_version = ">= 1.0.0"
+  
+  backend "gcs" {
+    bucket      = "gitops-gcs-bucket"
+    prefix      = "terraform/state"
+    credentials = "./resources/gitops-poc-1-0b406afbb75c.json"  
+  }
 }
 
 # Define Terraform Variables
