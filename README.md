@@ -2,8 +2,7 @@
 
 > **Note:**
 > This deployment guide is to understand the bigger picture of the implementation of this project. And following this guideline it can be replicated manually.
-> For the poc purpose GitHub workflow tools used to automate the manual process. Which can be achieved similar way using another VCS tools (e.g. gitlab, bitbucket).
-
+> For the poc purpose GitHub workflow (refer to ``.github/workflows/`` ) tools used to automate the manual process (only when used GitHub as VCS). But, the same can be achieved similar way using another VCS tools (e.g. gitlab, bitbucket).
 
 ## Tools used
 
@@ -163,6 +162,10 @@ ansible-playbook patch_playbook.yaml
 ```
 .
 ├── ansible.cfg
+├── .github
+│   └── workflows
+│       ├── destroy-infra.yml
+│       └── gitops-infra.yml
 ├── inventory.ini
 ├── k8s_playbook.yaml
 ├── main.tf
@@ -291,7 +294,7 @@ ansible-playbook patch_playbook.yaml
         └── vars
             └── main.yml
 
-41 directories, 88 files
+43 directories, 90 files
 ```
 
 ## References
