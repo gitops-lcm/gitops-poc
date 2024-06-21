@@ -41,5 +41,7 @@
     - name: Handle errors during kust crds
       ansible.builtin.debug:
         msg: ":: PATCH SERVICE ERROR :: "
+        
+# this patch may not work - must check manually using ops machine
 
 # kubectl patch service kube-prometheus-stack-grafana -p '{"spec":{"type": "NodePort"}}' -n monitoring
