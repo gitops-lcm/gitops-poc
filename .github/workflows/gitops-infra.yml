@@ -24,13 +24,13 @@ jobs:
         terraform_version: 1.0.0
         terraform_wrapper: false
 
-    - name: Set up Google Cloud SDK
+    - name: Set up infr acess
       uses: google-github-actions/setup-gcloud@v0.2.1
       with:
         project_id: gitops-poc-1
         service_account_key: ${{ secrets.GCP_SA_KEY }}
 
-    - name: Authenticate to Google Cloud
+    - name: Authenticate to infra env
       working-directory: /home/runner/work/gitops-poc/gitops-poc/
       run: gcloud auth activate-service-account --key-file=./resources/gitops-poc-1-0b406afbb75c.json
 
@@ -98,13 +98,13 @@ jobs:
         git config --global user.email "eashin.matubber@ericsson.com"
         git config --global user.name "Eashin Matubber"
 
-    - name: Clone flux-infra repository and place monitor
+    - name: Clone flux-infra repo & place monitor
       run: |  
         git clone https://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@github.com/gitops-lcm/flux-infra.git /home/runner/work/gitops-poc/flux-infra
         cp -r /home/runner/work/gitops-poc/gitops-poc/resources/monitoring /home/runner/work/gitops-poc/flux-infra
         cp /home/runner/work/gitops-poc/gitops-poc/resources/crds/fluxops/* /home/runner/work/gitops-poc/flux-infra/clusters/ops/
 
-    - name: Git push monitor and flux-ops crds
+    - name: Push flux-ops crds
       working-directory: /home/runner/work/gitops-poc/flux-infra
       run: |
         git add .
@@ -115,7 +115,7 @@ jobs:
     - name: Copy flux deployment CRDs to flux-infra
       run: cp /home/runner/work/gitops-poc/gitops-poc/resources/crds/deploy/* /home/runner/work/gitops-poc/flux-infra/clusters/ops/
 
-    - name: Git push deployment crds
+    - name: Push deployment CRDs
       working-directory: /home/runner/work/gitops-poc/flux-infra
       run: |
         git add .
@@ -131,6 +131,6 @@ jobs:
         ANSIBLE_REMOTE_USER: ${{ env.ssh_user }}
         ANSIBLE_PRIVATE_KEY_FILE: ~/.ssh/id_ed25519
         
-    - name: Terraform Destroy
+    - name: Terraform Destroy *if failure
       if: failure()
       run: terraform destroy -auto-approve
