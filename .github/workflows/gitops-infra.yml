@@ -24,7 +24,7 @@ jobs:
         terraform_version: 1.0.0
         terraform_wrapper: false
 
-    - name: Set up infr acess
+    - name: Set up infra acess
       uses: google-github-actions/setup-gcloud@v0.2.1
       with:
         project_id: gitops-poc-1
